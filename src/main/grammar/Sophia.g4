@@ -18,15 +18,61 @@ grammar Sophia;
     import main.ast.nodes.statement.loop.*;
 }
 
-sophia returns[Program sophiaProgram]: program EOF;
+sophia returns[Program sophiaProgram]:
+    p=program
+    { $sophiaProgram = $p.programRet;}
+    EOF
+    ;
 
-program: (sophiaClass)*;
+program returns[Program programRet]:
+    {
+        $programRet = new Program();
+        $programRet.setLine(1);
+    }
+    (
+        c=sophiaClass
+        { $programRet.addClass($c.sophiaClassRet); }
+    )*
+    ;
 
-sophiaClass: CLASS identifier (EXTENDS identifier)? LBRACE (((varDeclaration | method)* constructor (varDeclaration | method)*) | ((varDeclaration | method)*)) RBRACE;
+sophiaClass returns[ClassDeclaration sophiaClassRet]
+    locals[FieldDeclaration newField]:
+    clskw=CLASS classidn=identifier
+    {
+        $sophiaClassRet = new ClassDeclaration($classidn.identifierRet);
+        $sophiaClassRet.setLine($clskw.getLine());
+    }
+    (EXTENDS parentidn=identifier { $sophiaClassRet.setParentClassName($parentidn.identifierRet); } )?
+    LBRACE (((vd1=varDeclaration {
+           newFild= new FieldDeclaration($vd1.varDeclarationRet);
+            newField.setLine($newField.getVarDeclaration().getLine());
+            $sophiaClassRet.addField($newField);
+         }
+         | m1=method { $sophiaClassRet.addMethod($m1.methodDeclarationRet); }
+         )* cnstr=constructor { $sophiaClassRet.setConstructor($cnstr.constructorDeclarationRet); }
+         (vd2=varDeclaration {
+            newFild= new FieldDeclaration($vd2.varDeclarationRet);
+            newField.setLine($newField.getVarDeclaration().getLine());
+            $sophiaClassRet.addField($newField);
+            }
+         | m2=method { $sophiaClassRet.addMethod($m2.methodDeclarationRet); })*)|
+     ((vd3=varDeclaration {
+         newFild= new FieldDeclaration($vd3.varDeclarationRet);
+         newField.setLine($newField.getVarDeclaration().getLine());
+         $sophiaClassRet.addField($newField);
+         }
+      | m3=method { $sophiaClassRet.addMethod($m3.methodDeclarationRet); } )*)) RBRACE;
 
-varDeclaration: identifier COLON type SEMICOLLON;
+varDeclaration returns[VarDeclaration varDeclarationRet]:
+    idn=identifier COLON typ=type SEMICOLLON
+    {
+        $varDeclarationRet = new VarDeclaration($idn.identifierRet, $typ.typeRet);
+        $varDeclarationRet.setLine($idn.identifierRet.getLine());
+    }
+    ;
 
-method: DEF (type | VOID) identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE;
+method returns[MethodDeclaration methodDeclarationRet]:
+    DEF (type | VOID) identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE {System.out.println("Nigga code");};
 
 constructor: DEF identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE;
 
@@ -34,7 +80,11 @@ methodArguments: (variableWithType (COMMA variableWithType)*)?;
 
 variableWithType: identifier COLON type;
 
-type: primitiveDataType | listType | functionPointerType | classType;
+type returns[Type typeRet]:
+    primitiveDataType
+    | listType
+    | functionPointerType
+    | classType;
 
 classType: identifier;
 
@@ -108,7 +158,10 @@ boolValue: TRUE | FALSE;
 
 listValue: LBRACK methodCallArguments RBRACK;
 
-identifier: IDENTIFIER;
+identifier returns[Identifier identifierRet]:
+    idn=IDENTIFIER
+    { $identifierRet = new Identifier($idn.text); $identifierRet.setLine($idn.getLine()); }
+    ;
 
 
 DEF: 'def';
