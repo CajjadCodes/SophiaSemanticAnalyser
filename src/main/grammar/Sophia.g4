@@ -200,11 +200,12 @@ printStatement returns[PrintStmt printStatementRet]:
     ;
 
 returnStatement returns[ReturnStmt returnStatementRet]:
-    {
-        $returnStatementRet = new ReturnStmt();
-        $returnStatementRet.setLine($ret.getLine());
-    }
-    ret=RETURN (expr=expression { $returnStatementRet.setReturnedExpr($expr.expressionRet); } )? SEMICOLLON
+    ret=RETURN
+     {
+         $returnStatementRet = new ReturnStmt();
+         $returnStatementRet.setLine($ret.getLine());
+     }
+         (expr=expression { $returnStatementRet.setReturnedExpr($expr.expressionRet); } )? SEMICOLLON
     ;
 
 methodCallStatement returns[MethodCallStmt methodCallStatementRet]:

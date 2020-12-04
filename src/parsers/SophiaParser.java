@@ -2030,12 +2030,12 @@ public class SophiaParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-
-			        ((ReturnStatementContext)_localctx).returnStatementRet =  new ReturnStmt();
-			        _localctx.returnStatementRet.setLine(((ReturnStatementContext)_localctx).ret.getLine());
-			    
-			setState(372);
+			setState(371);
 			((ReturnStatementContext)_localctx).ret = match(RETURN);
+
+			         ((ReturnStatementContext)_localctx).returnStatementRet =  new ReturnStmt();
+			         _localctx.returnStatementRet.setLine(((ReturnStatementContext)_localctx).ret.getLine());
+			     
 			setState(376);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -4317,7 +4317,7 @@ public class SophiaParser extends Parser {
 		"\2\u0169\u016a\5@!\2\u016a\u016b\7(\2\2\u016b\u016c\5> \2\u016c\u016d"+
 		"\b\26\1\2\u016d+\3\2\2\2\u016e\u016f\7\6\2\2\u016f\u0170\7+\2\2\u0170"+
 		"\u0171\5> \2\u0171\u0172\7,\2\2\u0172\u0173\7\65\2\2\u0173\u0174\b\27"+
-		"\1\2\u0174-\3\2\2\2\u0175\u0176\b\30\1\2\u0176\u017a\7\13\2\2\u0177\u0178"+
+		"\1\2\u0174-\3\2\2\2\u0175\u0176\7\13\2\2\u0176\u017a\b\30\1\2\u0177\u0178"+
 		"\5> \2\u0178\u0179\b\30\1\2\u0179\u017b\3\2\2\2\u017a\u0177\3\2\2\2\u017a"+
 		"\u017b\3\2\2\2\u017b\u017c\3\2\2\2\u017c\u017d\7\65\2\2\u017d/\3\2\2\2"+
 		"\u017e\u017f\5\62\32\2\u017f\u0180\7\65\2\2\u0180\u0181\b\31\1\2\u0181"+

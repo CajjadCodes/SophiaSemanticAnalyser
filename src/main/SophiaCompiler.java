@@ -16,7 +16,7 @@ public class SophiaCompiler {
         Program program = sophiaParser.sophia().sophiaProgram;
 
         //Todo
-        SymbolTable st = new SymbolTable();
+//        SymbolTable st = new SymbolTable();
         ASTTreePrinter printer = new ASTTreePrinter();
         printer.visit(program);
     }
