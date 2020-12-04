@@ -71,16 +71,39 @@ varDeclaration returns[VarDeclaration varDeclarationRet]:
     }
     ;
 
-method returns[MethodDeclaration methodDeclarationRet]:
-    DEF (type | VOID) identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE;
+method returns[MethodDeclaration methodDeclarationRet]
+    locals[bool isRetTypeVoid]:
+    { isRetTypeVoid = false; }
+    df=DEF (rettyp=type| VOID { isRetTypeVoid = true; }) idn=identifier
+     {
+        $methodDeclarationRet = new MethodDeclaration($idn.identifierRet, isRetTypeVoid? new NullType(): $rettyp.typeRet);
+        $methodDeclarationRet.setLine($df.getLine());
+     }
+     LPAR ma=methodArguments { $methodDeclarationRet.setArgs($ma.methodArgumentsRet); }
+     RPAR LBRACE methodBody[methodDeclarationRet] RBRACE
+     ;
 
-constructor: DEF identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE;
+constructor returns[ConstructorDeclaration constructorDeclarationRet]:
+    df=DEF idn=identifier
+    {
+        $constructorDeclarationRet = new ConstructorDeclaration($idn.identifierRet);
+        $constructorDeclarationRet.setLine($df.getLine());
+    }
+    LPAR ma=methodArguments { $constructorDeclarationRet.setArgs($ma.methodArgumentsRet); }
+    RPAR LBRACE methodBody[constructorDeclarationRet] RBRACE;
 
-methodArguments: (variableWithType (COMMA variableWithType)*)?;
+methodArguments returns[ArrayList<VarDeclaration> methodArgumentsRet]:
+    { $methodArgumentsRet = ArrayList<VarDeclaration>(); }
+    (fvwt=variableWithType { $methodArgumentsRet.add($fvwt.variableWithTypeRet); }
+    (COMMA ovwt=variableWithType { $methodArgumentsRet.add($ovwt.variableWithTypeRet); } )*)?
+    ;
 
-variableWithType returns[ListNameType variableWithTypeRet]:
+variableWithType returns[VarDeclaration variableWithTypeRet]:
     idn=identifier COLON typ=type
-    { $variableWithTypeRet = new ListNameType($idn.identifierRet, $typ.typeRet); }
+    {
+        $variableWithTypeRet = new VarDeclaration($idn.identifierRet, $typ.typeRet);
+        $variableWithTypeRet.setLine($idn.identifierRet.getLine());
+    }
     ;
 
 type returns[Type typeRet]:
@@ -108,7 +131,7 @@ listItemsTypes returns[ArrayList<ListNameType> listItemsTypesRet]:
     ;
 
 listItemType returns[ListNameType listItemTypeRet]:
-    vwt=variableWithType { $listItemTypeRet = $vwt.variableWithTypeRet; }
+    vwt=variableWithType { $listItemTypeRet = new ListNameType($vwt.variableWithTypeRet); }
     | typ=type { $listItemTypeRet = new ListNameType($typ.typeRet); }
     ;
 
@@ -134,9 +157,12 @@ primitiveDataType returns[Type primitiveDataTypeRet]:
     | BOOLEAN { $primitiveDataTypeRet = new BoolType(); }
     ;
 
-methodBody: (varDeclaration)* (statement)*;
+methodBody[MethodDeclaration _method]:
+    (vd=varDeclaration { $_method.addLocalVar($vd.varDeclarationRet); } )*
+    (st=statement { $_method.addBodyStatement($st.statementRet); } )*;
 
-statement: forStatement | foreachStatement | ifStatement | assignmentStatement | printStatement | continueBreakStatement | methodCallStatement | returnStatement | block;
+statement returns[Statement statementRet]:
+forStatement | foreachStatement | ifStatement | assignmentStatement | printStatement | continueBreakStatement | methodCallStatement | returnStatement | block;
 
 block: LBRACE (statement)* RBRACE;
 
@@ -194,7 +220,10 @@ listValue: LBRACK methodCallArguments RBRACK;
 
 identifier returns[Identifier identifierRet]:
     idn=IDENTIFIER
-    { $identifierRet = new Identifier($idn.text); $identifierRet.setLine($idn.getLine()); }
+    {
+        $identifierRet = new Identifier($idn.text);
+        $identifierRet.setLine($idn.getLine());
+    }
     ;
 
 
