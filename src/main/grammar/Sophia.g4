@@ -215,15 +215,26 @@ methodCallStatement returns[MethodCallStmt methodCallStatementRet]:
     }
     ;
 
-methodCall returns[MethodCallStmt methodCallRet] ////////////////////
+methodCall returns[MethodCall methodCallRet] //////// Not sure yet. must debug
     locals[Expression instanceExpr]:
     initexpr=otherExpression { instanceExpr = $initexpr.otherExpressionRet; }
-    ((LPAR mcainst=methodCallArguments RPAR) | (DOT idn=identifier) | (LBRACK expr=expression RBRACK))*
-    { $methodCallRet = new MethodCallStmt(instanceExpr);}
-    (lpr=LPAR mca=methodCallArguments RPAR)
+    ((lprinst=LPAR mcainst=methodCallArguments RPAR {
+            instanceExpr = new MethodCall(instanceExpr, $mcainst.methodCallArgumentsRet);
+            instanceExpr.setLine($lprinst.getLine());
+        } )
+    | (DOT idn=identifier {
+            instanceExpr = new ObjectOrListMemberAccess(instanceExpr, $idn.identifierRet);
+            instanceExpr.setLine($idn.identifierRet.getLine());
+        })
+    | (lbr=LBRACK expr=expression RBRACK {
+            instanceExpr = new ListAccessByIndex(instanceExpr, $expr.expressionRet);
+            instanceExpr.setLine($lbr.getLine());
+        } )
+    )*
+    (lprarg=LPAR mca=methodCallArguments RPAR)
     {
-        $methodCallRet.setArgs($mca.methodCallArgumentsRet);
-        $methodCallRet.setLine($lpr.getLine());
+        $methodCallRet = new MethodCall(instanceExpr, $mca.methodCallArgumentsRet);
+        $methodCallRet.setLine($lprarg.getLine());
     }
     ;
 
@@ -377,11 +388,20 @@ postUnaryExpression returns[Expression postUnaryExpressionRet]
     }
     ;
 
-accessExpression returns[Expression accessExpressionRet]: //////
+accessExpression returns[Expression accessExpressionRet]:
     oe=otherExpression { $accessExpressionRet = $oe.otherExpressionRet; }
-    ((LPAR methodCallArguments RPAR  )
-        | (DOT identifier  )
-        | (LBRACK expression RBRACK )
+    ((lpr=LPAR mca=methodCallArguments RPAR {
+        $accessExpressionRet = new MethodCall($accessExpressionRet, $mca.methodCallArgumentsRet); //////////Not sure yet
+        $accessExpressionRet.setLine($lpr.getLine());
+        } )
+    | (DOT idn=identifier {
+        $accessExpressionRet = new ObjectOrListMemberAccess($accessExpressionRet, $idn.identifierRet);
+        $accessExpressionRet.setLine($idn.identifierRet.getLine());
+        } )
+    | (lbr=LBRACK expr=expression RBRACK {
+        $accessExpressionRet = new ListAccessByIndex($accessExpressionRet, $expr.expressionRet);
+        $accessExpressionRet.setLine($lbr.getLine());
+        } )
     )*
     ;
 
