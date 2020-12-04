@@ -1,6 +1,7 @@
 package main;
 
 import main.ast.nodes.Program;
+import main.symbolTable.SymbolTable;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import parsers.SophiaLexer;
@@ -14,6 +15,7 @@ public class SophiaCompiler {
         Program program = sophiaParser.sophia().sophiaProgram;
 
         //Todo
+        SymbolTable st = new SymbolTable();
 
     }
 
