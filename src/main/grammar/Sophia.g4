@@ -386,15 +386,41 @@ accessExpression returns[Expression accessExpressionRet]: //////
     ;
 
 otherExpression returns[Expression otherExpressionRet]:
-    THIS | newExpression | values | identifier | LPAR (expression) RPAR;
+    th=THIS { $otherExpressionRet = new ThisClass(); $otherExpressionRet.setLine($th.getLine()); }
+    | ne=newExpression { $otherExpressionRet = $ne.newExpressionRet; }
+    | va=values { $otherExpressionRet = $va.valuesRet; }
+    | idn=identifier { $otherExpressionRet = $idn.identifierRet; }
+    | LPAR (exp=expression) RPAR { $otherExpressionRet = $exp.expressionRet; }
+    ;
 
-newExpression returns[]: NEW classType LPAR methodCallArguments RPAR;
+newExpression returns[NewClassInstance newExpressionRet]:
+    nw=NEW ct=classType LPAR mca=methodCallArguments RPAR
+    {
+        $newExpressionRet = new NewClassInstance($ct.classTypeRet, $mca.methodCallArgumentsRet);
+        $newExpressionRet.setLine($nw.getLine());
+    }
+    ;
 
-values: boolValue | STRING_VALUE | INT_VALUE | NULL | listValue;
+values returns[Value valuesRet]:
+    bv=boolValue { $valuesRet = $bv.boolValueRet; }
+    | sv=STRING_VALUE { $valuesRet = new StringValue($sv.text); $valuesRet.setLine($sv.getLine()); }
+    | iv=INT_VALUE { $valuesRet = new IntValue($iv.int); $valuesRet.setLine($iv.getLine()); }
+    | nu=NULL { $valuesRet = new NullValue(); $valuesRet.setLine($nu.getLine()); }
+    | lv=listValue { $valuesRet = $lv.listValueRet; }
+    ;
 
-boolValue: TRUE | FALSE;
+boolValue returns[BoolValue boolValueRet]:
+    tr=TRUE { $boolValueRet = new BoolValue(true); $boolValueRet.setLine($tr.getLine()); }
+    | fa=FALSE { $boolValueRet = new BoolValue(false); $boolValueRet.setLine($fa.getLine()); }
+    ;
 
-listValue: LBRACK methodCallArguments RBRACK;
+listValue returns[ListValue listValueRet]:
+    lbr=LBRACK mca=methodCallArguments RBRACK
+    {
+        $listValueRet = new ListValue($mca.methodCallArgumentsRet);
+        $listValueRet.setLine($lbr.getLine());
+    }
+    ;
 
 identifier returns[Identifier identifierRet]:
     idn=IDENTIFIER
