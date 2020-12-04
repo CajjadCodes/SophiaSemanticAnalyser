@@ -37,14 +37,21 @@ public class ASTTreePrinter extends Visitor<Void> {
     public Void visit(ClassDeclaration classDeclaration) {
         System.out.println(LINE + classDeclaration.getLine() + COLON + classDeclaration.toString()); // maybe print parent?
         classDeclaration.getClassName().accept(this);
-        classDeclaration.getParentClassName().accept(this);
+        if(classDeclaration.getParentClassName() != null)
+        {
+            classDeclaration.getParentClassName().accept(this);
+        }
 
         for(FieldDeclaration field: classDeclaration.getFields())
         {
             field.accept(this);
         }
 
-        classDeclaration.getConstructor().accept(this);
+        if(classDeclaration.getParentClassName() != null)
+        {
+            classDeclaration.getConstructor().accept(this);
+        }
+
 
         for(MethodDeclaration method: classDeclaration.getMethods())
         {
@@ -144,8 +151,15 @@ public class ASTTreePrinter extends Visitor<Void> {
         System.out.println(LINE+conditionalStmt.getLine()+COLON+conditionalStmt.toString());
         //maybe should check for null
         conditionalStmt.getCondition().accept(this);
-        conditionalStmt.getThenBody().accept(this);
-        conditionalStmt.getElseBody().accept(this);
+        if(conditionalStmt.getThenBody() != null)
+        {
+            conditionalStmt.getThenBody().accept(this);
+        }
+        if(conditionalStmt.getElseBody() != null)
+        {
+            conditionalStmt.getElseBody().accept(this);
+        }
+
         return null;
     }
 
