@@ -2,6 +2,7 @@ package main;
 
 import main.ast.nodes.Program;
 import main.symbolTable.SymbolTable;
+import main.visitor.ASTTreePrinter;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import parsers.SophiaLexer;
@@ -16,7 +17,8 @@ public class SophiaCompiler {
 
         //Todo
         SymbolTable st = new SymbolTable();
-
+        ASTTreePrinter printer = new ASTTreePrinter();
+        printer.visit(program);
     }
 
 }

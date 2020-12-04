@@ -44,21 +44,21 @@ sophiaClass returns[ClassDeclaration sophiaClassRet]
     }
     (EXTENDS parentidn=identifier { $sophiaClassRet.setParentClassName($parentidn.identifierRet); } )?
     LBRACE (((vd1=varDeclaration {
-           newFild= new FieldDeclaration($vd1.varDeclarationRet);
-            newField.setLine($newField.getVarDeclaration().getLine());
+           $newField= new FieldDeclaration($vd1.varDeclarationRet);
+            $newField.setLine($newField.getVarDeclaration().getLine());
             $sophiaClassRet.addField($newField);
          }
          | m1=method { $sophiaClassRet.addMethod($m1.methodDeclarationRet); }
          )* cnstr=constructor { $sophiaClassRet.setConstructor($cnstr.constructorDeclarationRet); }
          (vd2=varDeclaration {
-            newFild= new FieldDeclaration($vd2.varDeclarationRet);
-            newField.setLine($newField.getVarDeclaration().getLine());
+            $newField= new FieldDeclaration($vd2.varDeclarationRet);
+            $newField.setLine($newField.getVarDeclaration().getLine());
             $sophiaClassRet.addField($newField);
             }
          | m2=method { $sophiaClassRet.addMethod($m2.methodDeclarationRet); })*)|
      ((vd3=varDeclaration {
-         newFild= new FieldDeclaration($vd3.varDeclarationRet);
-         newField.setLine($newField.getVarDeclaration().getLine());
+         $newField= new FieldDeclaration($vd3.varDeclarationRet);
+         $newField.setLine($newField.getVarDeclaration().getLine());
          $sophiaClassRet.addField($newField);
          }
       | m3=method { $sophiaClassRet.addMethod($m3.methodDeclarationRet); } )*)) RBRACE;
@@ -72,15 +72,15 @@ varDeclaration returns[VarDeclaration varDeclarationRet]:
     ;
 
 method returns[MethodDeclaration methodDeclarationRet]
-    locals[bool isRetTypeVoid]:
-    { isRetTypeVoid = false; }
-    df=DEF (rettyp=type| VOID { isRetTypeVoid = true; }) idn=identifier
+    locals[boolean isRetTypeVoid]:
+    { $isRetTypeVoid = false; }
+    df=DEF (rettyp=type| VOID { $isRetTypeVoid = true; }) idn=identifier
      {
-        $methodDeclarationRet = new MethodDeclaration($idn.identifierRet, isRetTypeVoid? new NullType(): $rettyp.typeRet);
+        $methodDeclarationRet = new MethodDeclaration($idn.identifierRet, $isRetTypeVoid? new NullType(): $rettyp.typeRet);
         $methodDeclarationRet.setLine($df.getLine());
      }
      LPAR ma=methodArguments { $methodDeclarationRet.setArgs($ma.methodArgumentsRet); }
-     RPAR LBRACE methodBody[methodDeclarationRet] RBRACE
+     RPAR LBRACE methodBody[$methodDeclarationRet] RBRACE
      ;
 
 constructor returns[ConstructorDeclaration constructorDeclarationRet]:
@@ -90,10 +90,10 @@ constructor returns[ConstructorDeclaration constructorDeclarationRet]:
         $constructorDeclarationRet.setLine($df.getLine());
     }
     LPAR ma=methodArguments { $constructorDeclarationRet.setArgs($ma.methodArgumentsRet); }
-    RPAR LBRACE methodBody[constructorDeclarationRet] RBRACE;
+    RPAR LBRACE methodBody[$constructorDeclarationRet] RBRACE;
 
 methodArguments returns[ArrayList<VarDeclaration> methodArgumentsRet]:
-    { $methodArgumentsRet = ArrayList<VarDeclaration>(); }
+    { $methodArgumentsRet = new ArrayList<VarDeclaration>(); }
     (fvwt=variableWithType { $methodArgumentsRet.add($fvwt.variableWithTypeRet); }
     (COMMA ovwt=variableWithType { $methodArgumentsRet.add($ovwt.variableWithTypeRet); } )*)?
     ;
@@ -146,7 +146,7 @@ functionPointerType returns[FptrType fptrTypeRet]:
     ;
 
 typesWithComma returns[ArrayList<Type> typesWithCommaRet]:
-    {$typesWithCommaRet = new ArrayList<Type>;}
+    {$typesWithCommaRet = new ArrayList<Type>();}
     ftyp=type {$typesWithCommaRet.add($ftyp.typeRet); }
     (COMMA otyp=type {$typesWithCommaRet.add($otyp.typeRet); })*
     ;
@@ -174,7 +174,7 @@ statement returns[Statement statementRet]:
 
 block returns[BlockStmt blockRet]:
     lbrc=LBRACE
-    { $blockRet = new BlockStmt(); $blockRet.setLine(lbrc.getLine()); }
+    { $blockRet = new BlockStmt(); $blockRet.setLine($lbrc.getLine()); }
     (stm=statement { $blockRet.addStatement($stm.statementRet); } )*
     RBRACE
     ;
@@ -217,23 +217,23 @@ methodCallStatement returns[MethodCallStmt methodCallStatementRet]:
 
 methodCall returns[MethodCall methodCallRet] //////// Not sure yet. must debug
     locals[Expression instanceExpr]:
-    initexpr=otherExpression { instanceExpr = $initexpr.otherExpressionRet; }
+    initexpr=otherExpression { $instanceExpr = $initexpr.otherExpressionRet; }
     ((lprinst=LPAR mcainst=methodCallArguments RPAR {
-            instanceExpr = new MethodCall(instanceExpr, $mcainst.methodCallArgumentsRet);
-            instanceExpr.setLine($lprinst.getLine());
+            $instanceExpr = new MethodCall($instanceExpr, $mcainst.methodCallArgumentsRet);
+            $instanceExpr.setLine($lprinst.getLine());
         } )
     | (DOT idn=identifier {
-            instanceExpr = new ObjectOrListMemberAccess(instanceExpr, $idn.identifierRet);
-            instanceExpr.setLine($idn.identifierRet.getLine());
+            $instanceExpr = new ObjectOrListMemberAccess($instanceExpr, $idn.identifierRet);
+            $instanceExpr.setLine($idn.identifierRet.getLine());
         })
     | (lbr=LBRACK expr=expression RBRACK {
-            instanceExpr = new ListAccessByIndex(instanceExpr, $expr.expressionRet);
-            instanceExpr.setLine($lbr.getLine());
+            $instanceExpr = new ListAccessByIndex($instanceExpr, $expr.expressionRet);
+            $instanceExpr.setLine($lbr.getLine());
         } )
     )*
     (lprarg=LPAR mca=methodCallArguments RPAR)
     {
-        $methodCallRet = new MethodCall(instanceExpr, $mca.methodCallArgumentsRet);
+        $methodCallRet = new MethodCall($instanceExpr, $mca.methodCallArgumentsRet);
         $methodCallRet.setLine($lprarg.getLine());
     }
     ;
@@ -249,7 +249,7 @@ continueBreakStatement returns[Statement continueBreakStatementRet]:
     ) SEMICOLLON
     ;
 
-forStatement returns[FotStmt forStatementRet]:
+forStatement returns[ForStmt forStatementRet]:
     forr=FOR
     {
         $forStatementRet = new ForStmt();
@@ -311,12 +311,12 @@ andExpression returns[Expression andExpressionRet]:
 equalityExpression returns[Expression equalityExpressionRet]
     locals[BinaryOperator binop, int linenum]:
     fre=relationalExpression { $equalityExpressionRet = $fre.relationalExpressionRet; }
-    ((eqq=EQUAL {binop = BinaryOperator.eq; linenum = $eqq.getLine();}
-        | neqq=NOT_EQUAL {binop = BinaryOperator.neq; linenum = $neqq.getLine();} )
+    ((eqq=EQUAL {$binop = BinaryOperator.eq; $linenum = $eqq.getLine();}
+        | neqq=NOT_EQUAL {$binop = BinaryOperator.neq; $linenum = $neqq.getLine();} )
     ore=relationalExpression
     {
-        $equalityExpressionRet = new BinaryExpression($equalityExpressionRet, $ore.relationalExpressionRet, binop);
-        $equalityExpressionRet.setLine(linenum);
+        $equalityExpressionRet = new BinaryExpression($equalityExpressionRet, $ore.relationalExpressionRet, $binop);
+        $equalityExpressionRet.setLine($linenum);
     }
     )*
     ;
@@ -324,12 +324,12 @@ equalityExpression returns[Expression equalityExpressionRet]
 relationalExpression returns[Expression relationalExpressionRet]
     locals[BinaryOperator binop, int linenum]:
     fae=additiveExpression { $relationalExpressionRet = $fae.additiveExpressionRet; }
-    ((gtt=GREATER_THAN {binop = BinaryOperator.gt; linenum = $gtt.getLine();}
-        | ltt=LESS_THAN {binop = BinaryOperator.lt; linenum = $ltt.getLine();} )
+    ((gtt=GREATER_THAN {$binop = BinaryOperator.gt; $linenum = $gtt.getLine();}
+        | ltt=LESS_THAN {$binop = BinaryOperator.lt; $linenum = $ltt.getLine();} )
     oae=additiveExpression
     {
-        $relationalExpressionRet = new BinaryExpression($relationalExpressionRet, $oae.additiveExpressionRet, binop);
-        $relationalExpressionRet.setLine(linenum);
+        $relationalExpressionRet = new BinaryExpression($relationalExpressionRet, $oae.additiveExpressionRet, $binop);
+        $relationalExpressionRet.setLine($linenum);
     }
     )*
     ;
@@ -337,12 +337,12 @@ relationalExpression returns[Expression relationalExpressionRet]
 additiveExpression returns[Expression additiveExpressionRet]
     locals[BinaryOperator binop, int linenum]:
     fme=multiplicativeExpression { $additiveExpressionRet = $fme.multiplicativeExpressionRet; }
-    ((pp=PLUS {binop = BinaryOperator.add; linenum = $pp.getLine();}
-        | mm=MINUS {binop = BinaryOperator.sub; linenum = $mm.getLine();} )
+    ((pp=PLUS {$binop = BinaryOperator.add; $linenum = $pp.getLine();}
+        | mm=MINUS {$binop = BinaryOperator.sub; $linenum = $mm.getLine();} )
     ome=multiplicativeExpression
     {
-        $additiveExpressionRet = new BinaryExpression($additiveExpressionRet, $ome.multiplicativeExpressionRet, binop);
-        $additiveExpressionRet.setLine(linenum);
+        $additiveExpressionRet = new BinaryExpression($additiveExpressionRet, $ome.multiplicativeExpressionRet, $binop);
+        $additiveExpressionRet.setLine($linenum);
     }
     )*
     ;
@@ -350,41 +350,41 @@ additiveExpression returns[Expression additiveExpressionRet]
 multiplicativeExpression returns[Expression multiplicativeExpressionRet]
     locals[BinaryOperator binop, int linenum]:
     fpue=preUnaryExpression { $multiplicativeExpressionRet = $fpue.preUnaryExpressionRet; }
-    ((multt=MULT {binop = BinaryOperator.mult; linenum = $multt.getLine();}
-        | divv=DIVIDE {binop = BinaryOperator.div; linenum = $divv.getLine();}
-        | modd=MOD {binop = BinaryOperator.mod; linenum = $modd.getLine();} )
+    ((multt=MULT {$binop = BinaryOperator.mult; $linenum = $multt.getLine();}
+        | divv=DIVIDE {$binop = BinaryOperator.div; $linenum = $divv.getLine();}
+        | modd=MOD {$binop = BinaryOperator.mod; $linenum = $modd.getLine();} )
     opue=preUnaryExpression
     {
-        $multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, $opue.preUnaryExpressionRet, binop);
-        $multiplicativeExpressionRet.setLine(linenum);
+        $multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, $opue.preUnaryExpressionRet, $binop);
+        $multiplicativeExpressionRet.setLine($linenum);
     }
     )*
     ;
 
 preUnaryExpression returns[Expression preUnaryExpressionRet]
     locals[UnaryOperator unop, int linenum]:
-    ((nt=NOT { unop = UnaryOperator.not; linenum = $nt.getLine(); }
-        | mn=MINUS { unop = UnaryOperator.minus; linenum = $mn.getLine(); }
-        | incc=INCREMENT { unop = UnaryOperator.preinc; linenum = $incc.getLine(); }
-        | decc=DECREMENT { unop = UnaryOperator.predec; linenum = $decc.getLine(); } )
+    ((nt=NOT { $unop = UnaryOperator.not; $linenum = $nt.getLine(); }
+        | mn=MINUS { $unop = UnaryOperator.minus; $linenum = $mn.getLine(); }
+        | incc=INCREMENT { $unop = UnaryOperator.preinc; $linenum = $incc.getLine(); }
+        | decc=DECREMENT { $unop = UnaryOperator.predec; $linenum = $decc.getLine(); } )
     fpue=preUnaryExpression
     {
-        $preUnaryExpressionRet = new UnaryExpression($fpue.preUnaryExpressionRet, unop);
-        $preUnaryExpressionRet.setLine(linenum);
+        $preUnaryExpressionRet = new UnaryExpression($fpue.preUnaryExpressionRet, $unop);
+        $preUnaryExpressionRet.setLine($linenum);
     }
     )
     | opue=postUnaryExpression { $preUnaryExpressionRet = $opue.postUnaryExpressionRet; }
     ;
 
 postUnaryExpression returns[Expression postUnaryExpressionRet]
-    locals[UnaryOperator unop, int linenum, bool hasPostOperators]:
-    { hasPostOperators = false;}
+    locals[UnaryOperator unop, int linenum, boolean hasPostOperators]:
+    { $hasPostOperators = false;}
     ae=accessExpression
-    (incc=INCREMENT { unop = UnaryOperator.postinc; linenum = $incc.getLine(); hasPostOperators = true; }
-        | decc=DECREMENT { unop = UnaryOperator.postdec; linenum = $decc.getLine(); hasPostOperators = true; } )?
+    (incc=INCREMENT { $unop = UnaryOperator.postinc; $linenum = $incc.getLine(); $hasPostOperators = true; }
+        | decc=DECREMENT { $unop = UnaryOperator.postdec; $linenum = $decc.getLine(); $hasPostOperators = true; } )?
     {
-        $postUnaryExpressionRet = hasPostOperators? new UnaryExpression($ae.accessExpressionRet, unop) : $ae.accessExpressionRet;
-        $postUnaryExpressionRet.setLine(linenum);
+        $postUnaryExpressionRet = $hasPostOperators? new UnaryExpression($ae.accessExpressionRet, $unop) : $ae.accessExpressionRet;
+        $postUnaryExpressionRet.setLine($linenum);
     }
     ;
 
