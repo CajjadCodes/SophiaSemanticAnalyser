@@ -72,33 +72,67 @@ varDeclaration returns[VarDeclaration varDeclarationRet]:
     ;
 
 method returns[MethodDeclaration methodDeclarationRet]:
-    DEF (type | VOID) identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE {System.out.println("Nigga code");};
+    DEF (type | VOID) identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE;
 
 constructor: DEF identifier LPAR methodArguments RPAR LBRACE methodBody RBRACE;
 
 methodArguments: (variableWithType (COMMA variableWithType)*)?;
 
-variableWithType: identifier COLON type;
+variableWithType returns[ListNameType variableWithTypeRet]:
+    idn=identifier COLON typ=type
+    { $variableWithTypeRet = new ListNameType($idn.identifierRet, $typ.typeRet); }
+    ;
 
 type returns[Type typeRet]:
-    primitiveDataType
-    | listType
-    | functionPointerType
-    | classType;
+    pmdt=primitiveDataType { $typeRet = $pmdt.primitiveDataTypeRet; }
+    | lt=listType { $typeRet = $lt.listTypeRet; }
+    | fpt=functionPointerType { $typeRet = $fpt.fptrTypeRet; }
+    | ct=classType { $typeRet = $ct.classTypeRet; }
+    ;
 
-classType: identifier;
+classType returns[ClassType classTypeRet]:
+    idn=identifier { $classTypeRet = new ClassType($idn.identifierRet); }
+    ;
 
-listType: LIST LPAR ((INT_VALUE SHARP type) | (listItemsTypes)) RPAR;
+listType returns[ListType listTypeRet]:
+    LIST LPAR
+    ((num=INT_VALUE SHARP singtyp=type { $listTypeRet = new ListType($num.int, new ListNameType($singtyp.typeRet)); })
+    | (lit=listItemsTypes { $listTypeRet = new ListType($lit.listItemsTypesRet); } ))
+    RPAR
+    ;
 
-listItemsTypes: listItemType (COMMA listItemType)*;
+listItemsTypes returns[ArrayList<ListNameType> listItemsTypesRet]:
+    { $listItemsTypesRet = new ArrayList<ListNameType>(); }
+    flt=listItemType {$listItemsTypesRet.add($flt.listItemTypeRet);}
+    (COMMA olt=listItemType {$listItemsTypesRet.add($olt.listItemTypeRet);} )*
+    ;
 
-listItemType: variableWithType | type;
+listItemType returns[ListNameType listItemTypeRet]:
+    vwt=variableWithType { $listItemTypeRet = $vwt.variableWithTypeRet; }
+    | typ=type { $listItemTypeRet = new ListNameType($typ.typeRet); }
+    ;
 
-functionPointerType: FUNC LESS_THAN (VOID | typesWithComma) ARROW (VOID | type) GREATER_THAN;
+functionPointerType returns[FptrType fptrTypeRet]:
+    { $fptrTypeRet = new FptrType(); }
+    FUNC LESS_THAN
+    (VOID { $fptrTypeRet.setArgumentsTypes(new ArrayList<Type>()); }
+        | twc=typesWithComma { $fptrTypeRet.setArgumentsTypes($twc.typesWithCommaRet); } )
+    ARROW
+    ( VOID { $fptrTypeRet.setReturnType(new NullType()); }
+        | rettyp=type { $fptrTypeRet.setReturnType($rettyp.typeRet);} ) GREATER_THAN
+    ;
 
-typesWithComma: type (COMMA type)*;
+typesWithComma returns[ArrayList<Type> typesWithCommaRet]:
+    {$typesWithCommaRet = new ArrayList<Type>;}
+    ftyp=type {$typesWithCommaRet.add($ftyp.typeRet); }
+    (COMMA otyp=type {$typesWithCommaRet.add($otyp.typeRet); })*
+    ;
 
-primitiveDataType: INT | STRING | BOOLEAN;
+primitiveDataType returns[Type primitiveDataTypeRet]:
+    INT { $primitiveDataTypeRet = new IntType(); }
+    | STRING { $primitiveDataTypeRet = new StringType(); }
+    | BOOLEAN { $primitiveDataTypeRet = new BoolType(); }
+    ;
 
 methodBody: (varDeclaration)* (statement)*;
 
