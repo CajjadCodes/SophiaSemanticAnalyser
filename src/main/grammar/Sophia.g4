@@ -162,33 +162,105 @@ methodBody[MethodDeclaration _method]:
     (st=statement { $_method.addBodyStatement($st.statementRet); } )*;
 
 statement returns[Statement statementRet]:
-forStatement | foreachStatement | ifStatement | assignmentStatement | printStatement | continueBreakStatement | methodCallStatement | returnStatement | block;
+    forr=forStatement { $statementRet = $forr.forStatementRet; }
+    | foreachh=foreachStatement { $statementRet = $foreachh.foreachStatementRet; }
+    | iff=ifStatement { $statementRet = $iff.ifStatementRet; }
+    | assignn=assignmentStatement { $statementRet = $assignn.assignmentStatementRet; }
+    | printt=printStatement { $statementRet = $printt.printStatementRet; }
+    | contbr=continueBreakStatement { $statementRet = $contbr.continueBreakStatementRet; }
+    | metcall=methodCallStatement { $statementRet = $metcall.methodCallStatementRet; }
+    | rett=returnStatement { $statementRet = $rett.returnStatementRet; }
+    | bl=block { $statementRet = $bl.blockRet; } ;
 
-block: LBRACE (statement)* RBRACE;
+block returns[BlockStmt blockRet]:
+    lbrc=LBRACE
+    { $blockRet = new BlockStmt(); $blockRet.setLine(lbrc.getLine()); }
+    (stm=statement { $blockRet.addStatement($stm.statementRet); } )*
+    RBRACE
+    ;
 
-assignmentStatement: assignment SEMICOLLON;
+assignmentStatement returns[AssignmentStmt assignmentStatementRet]:
+    assignn=assignment { $assignmentStatementRet = $assignn.assignmentRet; }
+    SEMICOLLON;
 
-assignment: orExpression ASSIGN expression;
+assignment returns[AssignmentStmt assignmentRet]:
+    orr=orExpression asgn=ASSIGN expr=expression
+    {
+        $assignmentRet = new AssignmentStmt($orr.orExpressionRet, $expr.expressionRet);
+        $assignmentRet.setLine($asgn.getLine());
+    }
+    ;
 
-printStatement: PRINT LPAR expression RPAR SEMICOLLON;
+printStatement returns[PrintStmt printStatementRet]:
+    pr=PRINT LPAR expr=expression RPAR SEMICOLLON
+    {
+        $printStatementRet = new PrintStmt($expr.expressionRet);
+        $printStatementRet.setLine($pr.getLine());
+    }
+    ;
 
-returnStatement: RETURN expression? SEMICOLLON;
+returnStatement returns[ReturnStmt returnStatementRet]:
+    {
+        $returnStatementRet = new ReturnStmt();
+        $returnStatementRet.setLine($ret.getLine());
+    }
+    ret=RETURN (expr=expression { $returnStatementRet.setReturnedExpr($expr.expressionRet); } )? SEMICOLLON
+    ;
 
-methodCallStatement: methodCall SEMICOLLON;
+methodCallStatement returns[MethodCallStmt methodCallStatementRet]:
+    mc=methodCall SEMICOLLON
+    {
+        $methodCallStatementRet = new MethodCallStmt($mc.methodCallRet);
+        $methodCallStatementRet.setLine($mc.methodCallRet.getLine());
+    }
+    ;
 
-methodCall: otherExpression ((LPAR methodCallArguments RPAR) | (DOT identifier) | (LBRACK expression RBRACK))* (LPAR methodCallArguments RPAR);
+methodCall returns[MethodCallStmt methodCallRet]: ////////////////////
+    instanceexpr=otherExpression ((lpr=LPAR mcainst=methodCallArguments RPAR) | (DOT idn=identifier) | (LBRACK expr=expression RBRACK))*
+    (LPAR mca=methodCallArguments RPAR);
 
-methodCallArguments: (expression (COMMA expression)*)?;
+methodCallArguments returns[ArrayList<Expression> methodCallArgumentsRet]:
+    { $methodCallArgumentsRet = new ArrayList<Expression>(); }
+    (fexpr=expression { $methodCallArgumentsRet.add($fexpr.expressionRet); }
+    (COMMA oexpr=expression { $methodCallArgumentsRet.add($oexpr.expressionRet); } )*)?;
 
-continueBreakStatement: (BREAK | CONTINUE) SEMICOLLON;
+continueBreakStatement returns[Statement continueBreakStatementRet]:
+    (br=BREAK { $continueBreakStatementRet = new BreakStmt(); $continueBreakStatementRet.setLine($br.getLine());}
+    | cont=CONTINUE {$continueBreakStatementRet = new ContinueStmt(); $continueBreakStatementRet.setLine($cont.getLine());}
+    ) SEMICOLLON
+    ;
 
-forStatement: FOR LPAR (assignment)? SEMICOLLON (expression)? SEMICOLLON (assignment)? RPAR statement;
+forStatement returns[FotStmt forStatementRet]:
+    forr=FOR
+    {
+        $forStatementRet = new ForStmt();
+        $forStatementRet.setLine($forr.getLine());
+    }
+    LPAR (initassgn=assignment { $forStatementRet.setInitialize($initassgn.assignmentRet); } )?
+    SEMICOLLON (condexpr=expression { $forStatementRet.setCondition($condexpr.expressionRet); } )?
+    SEMICOLLON (updateassgn=assignment { $forStatementRet.setUpdate($updateassgn.assignmentRet); } )?
+    RPAR bodystmt=statement { $forStatementRet.setBody($bodystmt.statementRet); }
+    ;
 
-foreachStatement: FOREACH LPAR identifier IN expression RPAR statement;
+foreachStatement returns[ForeachStmt foreachStatementRet]:
+    forch=FOREACH LPAR idn=identifier IN listexpr=expression
+    {
+        $foreachStatementRet = new ForeachStmt($idn.identifierRet, $listexpr.expressionRet);
+        $foreachStatementRet.setLine($forch.getLine());
+    }
+    RPAR bodystmt=statement { $foreachStatementRet.setBody($bodystmt.statementRet); }
+    ;
 
-ifStatement: IF LPAR expression RPAR statement (ELSE statement)?;
+ifStatement returns[ConditionalStmt ifStatementRet]:
+    iff=IF LPAR condexpr=expression RPAR thenstmt=statement
+    {
+        $ifStatementRet = new ConditionalStmt($condexpr.expressionRet, $thenstmt.statementRet);
+        $ifStatementRet.setLine($iff.getLine());
+    }
+    (ELSE elsestmt=statement { $ifStatementRet.setElseBody($elsestmt.statementRet); } )?
+    ;
 
-expression: orExpression (ASSIGN expression)?;
+expression returns[Expression expressionRet]: orExpression (ASSIGN expression)?;
 
 orExpression: andExpression (OR andExpression)*;
 
@@ -208,7 +280,8 @@ postUnaryExpression: accessExpression (INCREMENT | DECREMENT)?;
 
 accessExpression: otherExpression ((LPAR methodCallArguments RPAR) | (DOT identifier) | (LBRACK expression RBRACK))*;
 
-otherExpression: THIS | newExpression | values | identifier | LPAR (expression) RPAR;
+otherExpression returns[Expression otherExpressionRet]:
+    THIS | newExpression | values | identifier | LPAR (expression) RPAR;
 
 newExpression: NEW classType LPAR methodCallArguments RPAR;
 
