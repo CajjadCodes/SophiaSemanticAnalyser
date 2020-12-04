@@ -385,7 +385,9 @@ postUnaryExpression returns[Expression postUnaryExpressionRet]
         | decc=DECREMENT { $unop = UnaryOperator.postdec; $linenum = $decc.getLine(); $hasPostOperators = true; } )?
     {
         $postUnaryExpressionRet = $hasPostOperators? new UnaryExpression($ae.accessExpressionRet, $unop) : $ae.accessExpressionRet;
-        $postUnaryExpressionRet.setLine($linenum);
+        if ($hasPostOperators) {
+            $postUnaryExpressionRet.setLine($linenum);
+        }
     }
     ;
 

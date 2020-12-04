@@ -1,4 +1,4 @@
-// Generated from /media/quentine/DATA/Educational/University/Semester 5/Programming Languages and Compiler Design/CA/SophiaSemanticAnalyser/src/main/grammar/Sophia.g4 by ANTLR 4.8
+// Generated from D:/University/Books and Resources/Compiler and Programming Language Design/Assignments/Phase 2/SophiaSemanticAnalyser/src/main/grammar\Sophia.g4 by ANTLR 4.8
 package parsers;
 
     import main.ast.types.*;
@@ -3561,7 +3561,9 @@ public class SophiaParser extends Parser {
 			}
 
 			        ((PostUnaryExpressionContext)_localctx).postUnaryExpressionRet =  _localctx.hasPostOperators? new UnaryExpression(((PostUnaryExpressionContext)_localctx).ae.accessExpressionRet, _localctx.unop) : ((PostUnaryExpressionContext)_localctx).ae.accessExpressionRet;
-			        _localctx.postUnaryExpressionRet.setLine(_localctx.linenum);
+			        if (_localctx.hasPostOperators) {
+			            _localctx.postUnaryExpressionRet.setLine(_localctx.linenum);
+			        }
 			    
 			}
 		}
