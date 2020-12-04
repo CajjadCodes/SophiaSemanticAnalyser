@@ -32,6 +32,9 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
     private static final String FIELD_REDEFINITION = "Redefinition of field ";
     private static final String LOCAL_VARIABLE_REDEFINITION = "Redefinition of local variable ";
 
+    private static final String LINE = "Line:";
+    private static final String COLON = ":";
+
     private  SymbolTable st;
     public FirstPassNameAnalyzer(SymbolTable st)
     {
@@ -58,7 +61,8 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
         }
         catch (ItemAlreadyExistsException e)
         {
-            System.out.println(ERROR_MESSAGE+CLASS_REDEFINITION+classItem.getName());
+            System.out.println(LINE+classItem.getClassDeclaration().getLine()+COLON+
+                    CLASS_REDEFINITION+classItem.getName());
             classItem.setName("&" + classItem.getName());
             putClassSymbolTableItem(classItem);
 
@@ -105,7 +109,8 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
             SymbolTable.top.put(currentMethodSymbolTableItem);
         }
         catch (ItemAlreadyExistsException e) {
-            System.out.println(ERROR_MESSAGE + METHOD_REDEFINITION + currentMethodSymbolTableItem.getName());
+            System.out.println(LINE+ currentMethodSymbolTableItem.getMethodDeclaration().getLine()+COLON+
+                      METHOD_REDEFINITION + currentMethodSymbolTableItem.getName());
             currentMethodSymbolTableItem.setName("&" + currentMethodSymbolTableItem.getName());
             putMethodSymbolTableItem(currentMethodSymbolTableItem);
         }
@@ -141,7 +146,7 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
         return null;
     }
 
-    private  Void putFieldSymbolTableItem(FieldSymbolTableItem fst)
+    private  Void putFieldSymbolTableItem(FieldSymbolTableItem fst, int linenum)
     {
         try
         {
@@ -149,9 +154,9 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
         }
         catch (ItemAlreadyExistsException e)
         {
-            System.out.println(ERROR_MESSAGE+FIELD_REDEFINITION+fst.getName());
+            System.out.println(LINE+linenum+COLON+FIELD_REDEFINITION+fst.getName());
             fst.setName("&"+ fst.getName());
-            putFieldSymbolTableItem(fst);
+            putFieldSymbolTableItem(fst, linenum);
         }
         return null;
     }
@@ -161,11 +166,11 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
         SymbolTable.pop();
         FieldSymbolTableItem fst = new FieldSymbolTableItem(fieldDeclaration);
 
-        putFieldSymbolTableItem(fst);
+        putFieldSymbolTableItem(fst, fieldDeclaration.getVarDeclaration().getLine());
         return null;
     }
 
-    private Void putLocalVariableSymbolTableItem(LocalVariableSymbolTableItem lst)
+    private Void putLocalVariableSymbolTableItem(LocalVariableSymbolTableItem lst, int linenum)
     {
         try
         {
@@ -173,9 +178,9 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
         }
         catch (ItemAlreadyExistsException e)
         {
-            System.out.println(ERROR_MESSAGE+LOCAL_VARIABLE_REDEFINITION+lst.getName());
+            System.out.println(LINE+linenum+COLON+LOCAL_VARIABLE_REDEFINITION+lst.getName());
             lst.setName("&"+lst.getName());
-            putLocalVariableSymbolTableItem(lst);
+            putLocalVariableSymbolTableItem(lst, linenum);
         }
         return null;
     }
@@ -186,7 +191,7 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
         SymbolTable.pop();
         LocalVariableSymbolTableItem lst = new LocalVariableSymbolTableItem(varDeclaration);
 
-        putLocalVariableSymbolTableItem(lst);
+        putLocalVariableSymbolTableItem(lst, varDeclaration.getLine());
         return null;
     }
 
