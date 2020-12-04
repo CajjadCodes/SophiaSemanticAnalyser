@@ -235,6 +235,7 @@ public class ASTTreePrinter extends Visitor<Void> {
     public Void visit(ObjectOrListMemberAccess objectOrListMemberAccess) {
         System.out.println(LINE+objectOrListMemberAccess.getLine()+COLON+objectOrListMemberAccess.toString());
         objectOrListMemberAccess.getInstance().accept(this);
+        objectOrListMemberAccess.getMemberName().accept(this);
         return null;
     }
 
