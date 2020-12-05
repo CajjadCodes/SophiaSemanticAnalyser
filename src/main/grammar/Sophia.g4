@@ -426,7 +426,7 @@ newExpression returns[NewClassInstance newExpressionRet]:
 
 values returns[Value valuesRet]:
     bv=boolValue { $valuesRet = $bv.boolValueRet; }
-    | sv=STRING_VALUE { $valuesRet = new StringValue($sv.text); $valuesRet.setLine($sv.getLine()); }
+    | sv=STRING_VALUE { $valuesRet = new StringValue($sv.text.substring(1, $sv.text.length()-1)); $valuesRet.setLine($sv.getLine()); }
     | iv=INT_VALUE { $valuesRet = new IntValue($iv.int); $valuesRet.setLine($iv.getLine()); }
     | nu=NULL { $valuesRet = new NullValue(); $valuesRet.setLine($nu.getLine()); }
     | lv=listValue { $valuesRet = $lv.listValueRet; }

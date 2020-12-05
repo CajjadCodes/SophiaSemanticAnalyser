@@ -47,7 +47,7 @@ public class ASTTreePrinter extends Visitor<Void> {
             field.accept(this);
         }
 
-        if(classDeclaration.getParentClassName() != null)
+        if(classDeclaration.getConstructor() != null)
         {
             classDeclaration.getConstructor().accept(this);
         }
@@ -291,6 +291,7 @@ public class ASTTreePrinter extends Visitor<Void> {
             expr.accept(this);
         }
         return null;
+
     }
 
     @Override
@@ -313,7 +314,7 @@ public class ASTTreePrinter extends Visitor<Void> {
 
     @Override
     public Void visit(StringValue stringValue) {
-        System.out.println(LINE+stringValue.getLine()+COLON+stringValue+toString());
+        System.out.println(LINE+stringValue.getLine()+COLON+stringValue.toString());
         return null;
     }
 

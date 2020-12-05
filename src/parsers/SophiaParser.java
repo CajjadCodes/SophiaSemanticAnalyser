@@ -1,4 +1,4 @@
-// Generated from D:/University/Books and Resources/Compiler and Programming Language Design/Assignments/Phase 2/SophiaSemanticAnalyser/src/main/grammar\Sophia.g4 by ANTLR 4.8
+// Generated from /media/quentine/DATA/Educational/University/Semester 5/Programming Languages and Compiler Design/CA/SophiaSemanticAnalyser/src/main/grammar/Sophia.g4 by ANTLR 4.8
 package parsers;
 
     import main.ast.types.*;
@@ -3967,7 +3967,7 @@ public class SophiaParser extends Parser {
 				{
 				setState(652);
 				((ValuesContext)_localctx).sv = match(STRING_VALUE);
-				 ((ValuesContext)_localctx).valuesRet =  new StringValue((((ValuesContext)_localctx).sv!=null?((ValuesContext)_localctx).sv.getText():null)); _localctx.valuesRet.setLine(((ValuesContext)_localctx).sv.getLine()); 
+				 ((ValuesContext)_localctx).valuesRet =  new StringValue((((ValuesContext)_localctx).sv!=null?((ValuesContext)_localctx).sv.getText():null).substring(1, (((ValuesContext)_localctx).sv!=null?((ValuesContext)_localctx).sv.getText():null).length()-1)); _localctx.valuesRet.setLine(((ValuesContext)_localctx).sv.getLine()); 
 				}
 				break;
 			case INT_VALUE:
