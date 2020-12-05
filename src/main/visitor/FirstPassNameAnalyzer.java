@@ -54,12 +54,11 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
     {
         try
         {
-            //classItem.getClassSymbolTable().pre.put(classItem);
             SymbolTable.top.put(classItem);
         }
         catch (ItemAlreadyExistsException e)
         {
-            System.out.println(classItem.getClassDeclaration().getLine()+ERROR_MESSAGE+CLASS_REDEFINITION+classItem.getName());
+            System.out.println(ERROR_MESSAGE+CLASS_REDEFINITION+classItem.getName());
             classItem.setName("&" + classItem.getName());
             putClassSymbolTableItem(classItem);
 
@@ -70,6 +69,7 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
 
     @Override
     public Void visit(ClassDeclaration classDeclaration) {
+
         //SymbolTable st = new SymbolTable(SymbolTable.top);
         ClassSymbolTableItem classItem = new ClassSymbolTableItem(classDeclaration);
         SymbolTable currentClassSymbolTable = new SymbolTable(SymbolTable.top);
@@ -93,6 +93,7 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
         }
 
         //check field and method conflict
+
         SymbolTable.pop();
         return null;
     }
@@ -157,10 +158,10 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
 
     @Override
     public Void visit(FieldDeclaration fieldDeclaration) {
-
-        FieldSymbolTableItem fst = new FieldSymbolTableItem(fieldDeclaration);
-        putFieldSymbolTableItem(fst);
         SymbolTable.pop();
+        FieldSymbolTableItem fst = new FieldSymbolTableItem(fieldDeclaration);
+
+        putFieldSymbolTableItem(fst);
         return null;
     }
 
