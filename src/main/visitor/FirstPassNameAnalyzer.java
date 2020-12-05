@@ -119,16 +119,10 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
 
     @Override
     public Void visit(MethodDeclaration methodDeclaration) {
-        SymbolTable.pop();
+
         MethodSymbolTableItem currentMethodSymbolTableItem = new MethodSymbolTableItem(methodDeclaration);
         SymbolTable currentMethodSymbolTable = new SymbolTable(SymbolTable.top);
         currentMethodSymbolTableItem.setMethodSymbolTable(currentMethodSymbolTable);
-
-      /*  for(VarDeclaration dec: methodDeclaration.getArgs()) //maybe should be deleted
-        {
-            SymbolTable.push(currentMethodSymbolTableItem.getMethodSymbolTable());
-            dec.accept(this);
-        }*/
 
         for(VarDeclaration dec: methodDeclaration.getLocalVars())
         {
@@ -136,8 +130,7 @@ public class FirstPassNameAnalyzer extends Visitor<Void> {
             dec.accept(this);
         }
 
-
-
+        SymbolTable.pop();
         return null;
     }
 

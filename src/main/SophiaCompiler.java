@@ -16,13 +16,12 @@ public class SophiaCompiler {
         SophiaParser sophiaParser = new SophiaParser(tokenStream);
         Program program = sophiaParser.sophia().sophiaProgram;
 
-        //Todo
-        SymbolTable st = new SymbolTable();
+        //SymbolTable st = new SymbolTable();
         SymbolTable.root = new SymbolTable();
-        FirstPassNameAnalyzer fpna = new FirstPassNameAnalyzer(st);
-        fpna.visit(program);
-        //ASTTreePrinter printer = new ASTTreePrinter();
-        //printer.visit(program);
+        //FirstPassNameAnalyzer fpna = new FirstPassNameAnalyzer(st);
+        //fpna.visit(program);
+        ASTTreePrinter printer = new ASTTreePrinter();
+        printer.visit(program);
     }
 
 }
